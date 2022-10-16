@@ -4,40 +4,52 @@ import Head from 'next/head'
 import Image from 'next/image'
 import styles from '../styles/Home.module.css'
 import Products from "../components/products";
+import { useQuery } from "react-query";
+import { grid4 } from '../icons/icons';
+
+const fetchProductListFromAPI = async (page: number, sortBy: string) => {
+  const res = await fetch(`https://fakestoreapi.com/products?limit=${page}?sort=${sortBy}`);
+  return  res.json();
+}
+
+type IProductsinference = {
+  error: any;
+  data: any;
+}
 
 
-const Home: NextPage = ({ data }) => {
+
+
+const Home: NextPage<IProductsinference> = () => {
   const [grid, setGrid] = useState('grid');
+  const [page, setPage] = useState(5);
+  const [sortBy, setSort] = useState('desc');
 
   function handleSwitchGrid(value: string) {
     setGrid(value)
   }
 
-  console.log('data', data)
+  const { data, isLoading, isError, error, isPreviousData } = useQuery<Error>(['products', page],
+  () => fetchProductListFromAPI(page, sortBy), { keepPreviousData: true, staleTime: 5000 });
 
   function SwitchGrid (grid: string) {
     switch (grid) {
       case 'grid2':
-        return 'grid grid-cols-1 gap-y-10 gap-x-6  xl:gap-x-8  sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-2'
+        return 'sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-2'
       case 'grid3':
-        return 'grid grid-cols-1 gap-y-10 gap-x-6  xl:gap-x-8   sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3'
+        return 'sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3'
       case 'grid4':
-        return 'grid grid-cols-1 gap-y-10 gap-x-6  xl:gap-x-8   sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4'
+        return 'sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4'
       case 'grid5':
-        return 'grid grid-cols-1 gap-y-10 gap-x-6  xl:gap-x-8   sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5'
+        return 'sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5'
       default:
-        return ' grid grid-cols-1 gap-y-10 gap-x-6  xl:gap-x-8  sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4'
+        return 'sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4'
     }
   }
 
-  function fetchProducts() {
-    fetch('https://fakestoreapi.com/products/1')
-            .then(res=>res.json())
-            .then(json=>console.log(json))
-  }
 
 
-  
+
 
   return (
     <div className={styles.container}>
@@ -47,27 +59,76 @@ const Home: NextPage = ({ data }) => {
         <link rel="icon" href="/favicon.ico" />
       </Head>
 
-      <button onClick={() => handleSwitchGrid("grid2")}>Grid 2</button>
-      <button onClick={() => handleSwitchGrid("grid3")}>Grid 3</button>
-      <button onClick={() => handleSwitchGrid("grid4")}>Grid 4</button>
 
       <div className="bg-white">
         <div className={'mx-auto max-w-2xl py-16 px-4 sm:py-24 sm:px-6 lg:max-w-7xl lg:px-8'}>
         
+  
 
-        <div className="flex flex-row justify-between">
-            <h2 className="">Products</h2>
-            <div>
-                <button onClick={() => handleSwitchGrid("grid2")}>Grid 2</button>
-                <button onClick={() => handleSwitchGrid("grid3")}>Grid 3</button>
-                <button onClick={() => handleSwitchGrid("grid4")}>Grid 4</button>
+        <div className="mb-10 mt-5">
+            <div className="flex flex-row justify-between">
+                <h2 className="">Products</h2>
+            
+                <div className="flex justify-between">
+                  <select className="bg-slate-50 border border-slate-300 text-slate-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5">
+                    <option>Ascending</option>
+                    <option>Descending</option>
+                  </select>
+
+                  <div>
+                    <button className="bg-transparent border-0 cursor-pointer hover:bg-primary" onClick={() => handleSwitchGrid("grid2")}>Grid 2</button>
+                    <button className="bg-transparent border-0 cursor-pointer hover:bg-primary" onClick={() => handleSwitchGrid("grid3")}>Grid 3</button>
+                    <button className="bg-transparent border-0 cursor-pointer hover:bg-primary" onClick={() => handleSwitchGrid("grid4")}>grid4</button>
+                  </div>
+                </div>
             </div>
+
+            <form className="mt-5">   
+                <label htmlFor="default-search" className="mb-2 text-sm font-medium text-slate-900 sr-only">Search</label>
+                <div className="relative">
+                    <div className="flex absolute inset-y-0 left-0 items-center pl-3 pointer-events-none">
+                        <svg aria-hidden="true" className="w-5 h-5 text-slate-500 dark:text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                    </div>
+                    <input type="search" id="default-search" className="block p-4 pl-10 w-full text-sm text-slate-900 bg-slate-50 rounded-lg outline-0 border border-slate-300 focus:ring-blue-500 focus:border-blue-500" placeholder="Search Mockups, Logos..." required />
+                    <button type="submit" className="text-white absolute border-0 right-2.5 bottom-2.5 bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-4 py-2">Search</button>
+                </div>
+            </form>
         </div>
 
-         <div className={SwitchGrid(grid)}>
-          {data && data.map((item: any, index: number) => (<>
-              <Products item={item} index={index} />
-          </>))}
+
+         <div className={"grid grid-cols-2 gap-y-10 gap-x-6  xl:gap-x-8" + SwitchGrid(grid)}>
+         {isLoading ? (
+              <div role="status" className="max-w-sm animate-pulse">
+                <div className="h-2.5 bg-slate-200 rounded-full dark:bg-slate-700 w-48 mb-4"></div>
+                <div className="h-2 bg-slate-200 rounded-full dark:bg-slate-700 max-w-[360px] mb-2.5"></div>
+                <div className="h-2 bg-slate-200 rounded-full dark:bg-slate-700 mb-2.5"></div>
+                <div className="h-2 bg-slate-200 rounded-full dark:bg-slate-700 max-w-[330px] mb-2.5"></div>
+                <div className="h-2 bg-slate-200 rounded-full dark:bg-slate-700 max-w-[300px] mb-2.5"></div>
+                <div className="h-2 bg-slate-200 rounded-full dark:bg-slate-700 max-w-[360px]"></div>
+                <span className="sr-only">Loading...</span>
+            </div>
+            ) : isError ? (
+              <p>{error.message}</p>
+            ) : (
+              data.map((product: any, index: number) => (<>
+                <Products product={product} key={index} category={''} description={''} id={0} image={undefined} price={0} title={''} rating={{
+                  rate: 0,
+                  count: 0
+                }}  />
+
+
+            </>))
+        )}
+          
+
+
+          <div className='w-full'>
+            <div className="mx-auto">
+                <button type="button" onClick={() => setPage(old => Math.max(old - 1, 0))} disabled={page === 0} className="py-2.5 px-5 mr-2 mb-2 text-sm font-medium text-slate-900 focus:outline-none bg-white rounded-lg border border-slate-200 hover:bg-slate-100 hover:text-blue-700 focus:z-10 focus:ring-4 focus:ring-slate-200 dark:focus:ring-slate-700 dark:bg-slate-800 dark:text-slate-400 dark:border-slate-600 dark:hover:text-white dark:hover:bg-slate-700">Previous Page</button>
+                <button type="button" onClick={() => { setPage(old => (data?.hasMore ? old + 1 : old)) }} disabled={isPreviousData || !data?.hasMore} className="text-white bg-slate-800 hover:bg-slate-900 focus:outline-none focus:ring-4 focus:ring-slate-300 font-medium rounded-lg text-sm px-5 py-2.5 mr-2 mb-2 dark:bg-slate-800 dark:hover:bg-slate-700 dark:focus:ring-slate-700 dark:border-slate-700">Next Page</button>
+            </div>
+          </div>
+
             
         </div>
       </div>
@@ -78,13 +139,6 @@ const Home: NextPage = ({ data }) => {
   )
 }
 
-export async function getStaticProps() {
-  // Fetch data from external API
-  const res = await fetch(`https://fakestoreapi.com/products`)
-  const data = await res.json()
 
-  // Pass data to the page via props
-  return { props: { data } }
-}
 
 export default Home
