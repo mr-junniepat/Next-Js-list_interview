@@ -20,7 +20,7 @@ type IProducts = {
 
 const Products: React.FunctionComponent<IProducts> = ({ product }) => {
     return(
-        <>
+
 
       <a href="#" className="group" key={product.id}>
         <div className="aspect-w-1 aspect-h-1 w-full overflow-hidden rounded-lg bg-gray-200 xl:aspect-w-7 xl:aspect-h-8">
@@ -37,7 +37,7 @@ const Products: React.FunctionComponent<IProducts> = ({ product }) => {
         <p className="mt-1 text-lg font-medium text-gray-900">${product.price}</p>
       </a>
 
-        </>
+
     )
 }
 
