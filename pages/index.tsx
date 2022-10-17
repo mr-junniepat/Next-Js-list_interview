@@ -1,33 +1,56 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import type { NextPage } from 'next';
 import { useState, useEffect } from "react";
 import Head from 'next/head'
 import Image from 'next/image'
 import styles from '../styles/Home.module.css'
 import Products from "../components/products";
-import { useQuery } from "react-query";
+import { useQuery, useQueryClient, QueryClient } from "react-query";
 
-const fetchProductListFromAPI = async (page: number, sortBy: string) => {
-  const res = await fetch(`https://fakestoreapi.com/products?limit=${page}?sort=${sortBy}`);
+const fetchProductListFromAPI = async (page: number) => {
+  const res = await fetch(`https://dummyjson.com/products?limit=10&skip=${page}`);
   return  res.json();
 }
+
+const SearchProductListFromAPI = async (phrase: string) => {
+  const res = await fetch(`https://dummyjson.com/products/search?q=${phrase}`);
+  return  res.json();
+}
+
+
+// ?sort=${sortBy
 
 type IProductsinference = {
   error: any;
   data: any;
+  products: any;
 }
 
 
 const Home: NextPage<IProductsinference> = () => {
   const [grid, setGrid] = useState('grid4');
-  const [page, setPage] = useState(5);
-  const [sortBy, setSort] = useState('desc');
+  const [page, setPage] = useState(10);
 
+  const [sortBy, setSort] = useState('desc');
+  const [searched, setSearched] = useState("");
+
+  const queryClient = new QueryClient();
+  
   function handleSwitchGrid(value: string) {
     setGrid(value)
   }
 
-  const { data, isLoading, isError, error, isPreviousData } = useQuery<Error>(['products', page],
-  () => fetchProductListFromAPI(page, sortBy), { keepPreviousData: true, staleTime: 5000 });
+  const { data, isLoading, isError, error, isFetching, isPreviousData } = useQuery<Error>(['products', page],
+  () => fetchProductListFromAPI(page), { keepPreviousData: true, staleTime: 5000 });
+
+    // Prefetch the next page!
+    useEffect(() => {
+      if (page < data?.total) {
+        queryClient.prefetchQuery(['projects', page + 10], () =>
+        fetchProductListFromAPI(page + 10)
+        )
+      }
+    }, [data, page, queryClient])
 
   function SwitchGrid (grid: string) {
     switch (grid) {
@@ -43,6 +66,19 @@ const Home: NextPage<IProductsinference> = () => {
         return 'sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4'
     }
   }
+
+  // const sortAscending = () => {
+  //   data.sort((a, b) => a - b);
+  // }
+
+  // const sortDescending = () => {
+  //   data.sort((a, b) => a - b).reverse();
+  // }
+
+  function handleSearch() {
+   
+  }
+
 
 
 
@@ -73,7 +109,7 @@ const Home: NextPage<IProductsinference> = () => {
                   </select>
 
                
-                  <select onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleSwitchGrid(e.target.value)} 
+                  <select defaultValue={grid} onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleSwitchGrid(e.target.value)} 
                     className="bg-transparent border-0 ml-5 text-slate-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5">
                     <option value="grid2">2 per row</option>
                     <option value="grid3">3 per row</option>
@@ -89,8 +125,8 @@ const Home: NextPage<IProductsinference> = () => {
                     <div className="flex absolute inset-y-0 left-0 items-center pl-3 pointer-events-none">
                         <svg aria-hidden="true" className="w-5 h-5 text-slate-500 dark:text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
                     </div>
-                    <input type="search" id="default-search" className="block p-4 pl-10 w-full text-sm text-slate-900 bg-slate-50 rounded-lg outline-0 border border-slate-300 focus:ring-blue-500 focus:border-blue-500" placeholder="Search products..." required />
-                    <button type="submit" className="text-white absolute border-0 right-2.5 bottom-2.5 bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-4 py-2">Search</button>
+                    <input type="search" id="default-search" onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearched(e.target.value)} className="block p-4 pl-10 w-full text-sm text-slate-900 bg-slate-50 rounded-lg outline-0 border border-slate-300 focus:ring-blue-500 focus:border-blue-500" placeholder="Search products..." required />
+                    <button type="submit" onClick={() => handleSearch()} className="text-white absolute border-0 right-2.5 bottom-2.5 bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-4 py-2">Search</button>
                 </div>
             </form>
         </div>
@@ -110,7 +146,7 @@ const Home: NextPage<IProductsinference> = () => {
             ) : isError ? (
               <p>{error.message}</p>
             ) : (
-              data.map((product: any, index: number) => (
+              data?.products.map((product: any, index: number) => (
                 <Products product={product} key={index} category={''} description={''} id={0} image={undefined} price={0} title={''} rating={{
                   rate: 0,
                   count: 0
@@ -122,10 +158,30 @@ const Home: NextPage<IProductsinference> = () => {
         </div>
 
         <div className='w-full mt-10'>
-            <div className="w-1/4 mx-auto">
-                <button type="button" onClick={() => setPage(old => Math.max(old - 1, 0))} disabled={page === 0} className="py-2.5 px-5 mr-2 mb-2 text-sm font-medium text-slate-900 focus:outline-none bg-white rounded-lg border border-slate-200 hover:bg-slate-100 hover:text-blue-700 focus:z-10 focus:ring-4 focus:ring-slate-200 dark:focus:ring-slate-700 dark:bg-slate-800 dark:text-slate-400 dark:border-slate-600 dark:hover:text-white dark:hover:bg-slate-700">Previous Page</button>
-                <button type="button" onClick={() => { setPage(old => (data?.hasMore ? old + 1 : old)) }} disabled={isPreviousData || !data?.hasMore} className="text-white bg-slate-800 hover:bg-slate-900 focus:outline-none focus:ring-4 focus:ring-slate-300 font-medium rounded-lg text-sm px-5 py-2.5 mr-2 mb-2 dark:bg-slate-800 dark:hover:bg-slate-700 dark:focus:ring-slate-700 dark:border-slate-700">Next Page</button>
+        <div className="text-center text-md font-medium mb-5">Showing products: <span className="px-2 py-1.5 text-xs font-semibold text-gray-800 bg-gray-100 border border-gray-200 rounded-lg">{page} of {data?.total}</span></div>
+            <div className="w-1/4 mx-auto flex justify-center">
+                <button
+                  className="py-2.5 px-5 mr-2 mb-2 text-sm font-medium text-slate-900 focus:outline-none bg-white rounded-lg border border-slate-200 hover:bg-slate-100 hover:text-blue-700 focus:z-10 focus:ring-4 focus:ring-slate-200 dark:focus:ring-slate-700 dark:bg-slate-800 dark:text-slate-400 dark:border-slate-600 dark:hover:text-white dark:hover:bg-slate-700"
+                  onClick={() => setPage(old => Math.max(old - 10, 0))}
+                  disabled={page === 0}
+                >
+                  Previous Page
+                </button>{' '}
+
+                <button
+                  className="text-white bg-slate-800 hover:bg-slate-900 focus:outline-none focus:ring-4 focus:ring-slate-300 font-medium rounded-lg text-sm px-5 py-2.5 mr-2 mb-2 dark:bg-slate-800 dark:hover:bg-slate-700 dark:focus:ring-slate-700 dark:border-slate-700"
+                  onClick={() => {
+                    if (!isPreviousData && data.total) {
+                      setPage(old => old + 10)
+                    }
+                  }}
+                  // Disable the Next Page button until we know a next page is available
+                  disabled={isPreviousData || !data?.total || page === data?.total - 10}
+                >
+                  Next Page
+                </button>
             </div>
+            {isFetching ? <div className="text-center text-md font-medium mb-5"> Loading...</div> : null}{' '}
         </div>
 
 
