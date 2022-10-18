@@ -22,14 +22,20 @@ const SearchProductListFromAPI = async (phrase: string) => {
 
 type IProductsinference = {
   error: any;
-  data: any;
-  products: any;
+  message: string;
+  data: {
+    total: number;
+    products: any;
+  };
+  banner: any;
 }
 
 
 const Home: NextPage<IProductsinference> = () => {
   const [grid, setGrid] = useState('grid4');
   const [page, setPage] = useState(0);
+
+ 
 
   const [sortBy, setSort] = useState('desc');
   const [searched, setSearched] = useState("");
@@ -40,10 +46,10 @@ const Home: NextPage<IProductsinference> = () => {
     setGrid(value)
   }
 
-  const { data, isLoading, isError, error, isFetching, isPreviousData } = useQuery<IProductsinference>(['products', page],
+  const { data, isLoading, isError, error, isFetching, isPreviousData } = useQuery<any>(['products', page],
   () => fetchProductListFromAPI(page), { keepPreviousData: true, staleTime: 5000 });
 
-  const { data: search, isLoading: searchLoading, isError: sError, error: rError, isFetching: sFetch, isPreviousData: oldData } = useQuery<IProductsinference>(`search-${searched}`,
+  const { data: search, isLoading: searchLoading, isError: sError, error: rError, isFetching: sFetch, isPreviousData: oldData } = useQuery<any>(`search-${searched}`,
   () => SearchProductListFromAPI(searched), { keepPreviousData: true, staleTime: 5000 });
 
 
@@ -57,6 +63,8 @@ const Home: NextPage<IProductsinference> = () => {
         )
       }
     }, [data, page, queryClient])
+
+
 
   function SwitchGrid (grid: string) {
     switch (grid) {
@@ -99,20 +107,20 @@ const Home: NextPage<IProductsinference> = () => {
       <div className="bg-white">
         <div className={'mx-auto max-w-2xl py-16 px-4 sm:py-24 sm:px-6 lg:max-w-7xl lg:px-8'}>
         
-  
+        {/* {banner.position === "top" && <>banner</>} */}
 
         <div className="mb-10 mt-5">
             <div className="flex flex-row justify-between">
                 <h2 className="">Products</h2>
             
                 <div className="flex justify-between">
-                  <select onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleSwitchGrid(e.target.value)} className="bg-slate-50 border border-slate-300 text-slate-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5">
+                  <select onChange={(e: React.ChangeEvent<HTMLSelectElement>) => handleSwitchGrid(e.target.value)} className="bg-slate-50 border border-slate-300 text-slate-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5">
                     <option>Ascending</option>
                     <option>Descending</option>
                   </select>
 
                
-                  <select defaultValue={grid} onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleSwitchGrid(e.target.value)} 
+                  <select defaultValue={grid} onChange={(e: React.ChangeEvent<HTMLSelectElement>,): void => handleSwitchGrid(e.target.value)} 
                     className="bg-transparent border-0 ml-5 text-slate-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5">
                     <option value="grid2">2 per row</option>
                     <option value="grid3">3 per row</option>
@@ -129,7 +137,7 @@ const Home: NextPage<IProductsinference> = () => {
                         <svg aria-hidden="true" className="w-5 h-5 text-slate-500 dark:text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
                     </div>
                     <input type="search" id="default-search" onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearched(e.target.value)} className="block p-4 pl-10 w-full text-sm text-slate-900 bg-slate-50 rounded-lg outline-0 border border-slate-300 focus:ring-blue-500 focus:border-blue-500" placeholder="Search products..." required />
-                    <span type="submit" className="text-white absolute border-0 right-2.5 bottom-2.5 bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-4 py-2">auto search</span>
+                    <span className="text-white absolute border-0 right-2.5 bottom-2.5 bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-4 py-2">auto search</span>
                 </div>
             </form>
         </div>
@@ -148,10 +156,10 @@ const Home: NextPage<IProductsinference> = () => {
                 <span className="sr-only">Loading...</span>
             </div>
             ) : isError && sError ? (
-              <p>{error.message}</p>
+              <p>{error?.message}</p>
             ) : searched === "" ? (
               data?.products.map((product: any, index: number) => (
-                <Products product={product || {}} key={index} category={''} description={''} id={0} image={undefined} price={0} title={''} rating={{
+                <Products product={product || {}} key={index} category={''} description={''} _id={0} thumbnail={""} price={0} title={''} rating={{
                   rate: 0,
                   count: 0
                 }}  />
@@ -160,7 +168,7 @@ const Home: NextPage<IProductsinference> = () => {
         (
     
             search?.products.map((product: any, index: number) => (
-              <Products product={product} key={index} category={''} description={''} id={0} image={undefined} price={0} title={''} rating={{
+              <Products product={product} key={index} category={''} description={''} _id={0} thumbnail={null} price={0} title={''} rating={{
                 rate: 0,
                 count: 0
               }}  />
@@ -171,9 +179,9 @@ const Home: NextPage<IProductsinference> = () => {
         </div>
 
       
-        {search?.products && <div className="p-4 text-sm mx-auto w-full text-gray-700 bg-gray-100 rounded-lg text-center" role="alert">
+        {searched ? search?.products && <div className="p-4 text-sm mx-auto w-full text-gray-700 bg-gray-100 rounded-lg text-center" role="alert">
           <span className="font-medium">Unable to find your Item!</span> Hi there, We are unable to find (searched) in our inventory.
-        </div>}
+        </div> : null}
               
 
         <div className='w-full mt-10'>
@@ -190,7 +198,7 @@ const Home: NextPage<IProductsinference> = () => {
                 <button
                   className="text-white bg-slate-800 hover:bg-slate-900 focus:outline-none focus:ring-4 focus:ring-slate-300 font-medium rounded-lg text-sm px-5 py-2.5 mr-2 mb-2 dark:bg-slate-800 dark:hover:bg-slate-700 dark:focus:ring-slate-700 dark:border-slate-700"
                   onClick={() => {
-                    if (!isPreviousData && data.total) {
+                    if (!isPreviousData && data?.total) {
                       setPage(old => old + 10)
                     }
                   }}
@@ -208,6 +216,7 @@ const Home: NextPage<IProductsinference> = () => {
 
 
 
+      {/* {banner.position === "top" && <>banner</>} */}
 
     </div>
     </div>

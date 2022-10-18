@@ -26,9 +26,6 @@ type IProducts = {
 
 
 const Products: React.FunctionComponent<IProducts> = ({ product }) => {
-
-  console.log("product", product)
-
     return(
         <>
               <a href="#" className="group" key={product.id}>
