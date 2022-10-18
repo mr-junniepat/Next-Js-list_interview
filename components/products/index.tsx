@@ -3,29 +3,20 @@ import Image from "next/image";
 
 
 type IProducts = {
-  product: any;
-  category:  string;
+  category: string;
   description: string;
-  stock: string;
-  _id: number;
-  thumbnail: HTMLImageElement;
-  images: HTMLImageElement;
+  id: string;
+  thumbnail: string;
   price: number;
   title: string;
-  createdBy: {
-      role: string;
-      _id: number;
-      name: string;
-  };
-  createdAt: "string";
-}
+};
+
+type ProductProps = {
+  product: IProducts;
+};
 
 
-
-
-
-
-const Products: React.FunctionComponent<IProducts> = ({ product }) => {
+const Products = ({ product }: ProductProps) => {
     return(
         <>
               <a href="#" className="group" key={product.id}>
