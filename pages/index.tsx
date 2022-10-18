@@ -5,7 +5,7 @@ import Head from 'next/head'
 import Image from 'next/image'
 import styles from '../styles/Home.module.css'
 import Products from "../components/products";
-import { useQuery, useQueryClient, QueryClient } from "react-query";
+import { useQuery, QueryClient } from "react-query";
 
 const fetchProductListFromAPI = async (page: number) => {
   const res = await fetch(`https://dummyjson.com/products?limit=10&skip=${page}`);
@@ -29,7 +29,7 @@ type IProductsinference = {
 
 const Home: NextPage<IProductsinference> = () => {
   const [grid, setGrid] = useState('grid4');
-  const [page, setPage] = useState(10);
+  const [page, setPage] = useState(0);
 
   const [sortBy, setSort] = useState('desc');
   const [searched, setSearched] = useState("");
@@ -40,8 +40,14 @@ const Home: NextPage<IProductsinference> = () => {
     setGrid(value)
   }
 
-  const { data, isLoading, isError, error, isFetching, isPreviousData } = useQuery<Error>(['products', page],
+  const { data, isLoading, isError, error, isFetching, isPreviousData } = useQuery<IProductsinference>(['products', page],
   () => fetchProductListFromAPI(page), { keepPreviousData: true, staleTime: 5000 });
+
+  const { data: search, isLoading: searchLoading, isError: sError, error: rError, isFetching: sFetch, isPreviousData: oldData } = useQuery<IProductsinference>(`search-${searched}`,
+  () => SearchProductListFromAPI(searched), { keepPreviousData: true, staleTime: 5000 });
+
+
+
 
     // Prefetch the next page!
     useEffect(() => {
@@ -75,10 +81,7 @@ const Home: NextPage<IProductsinference> = () => {
   //   data.sort((a, b) => a - b).reverse();
   // }
 
-  function handleSearch() {
-   
-  }
-
+ 
 
 
 
@@ -126,14 +129,15 @@ const Home: NextPage<IProductsinference> = () => {
                         <svg aria-hidden="true" className="w-5 h-5 text-slate-500 dark:text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
                     </div>
                     <input type="search" id="default-search" onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearched(e.target.value)} className="block p-4 pl-10 w-full text-sm text-slate-900 bg-slate-50 rounded-lg outline-0 border border-slate-300 focus:ring-blue-500 focus:border-blue-500" placeholder="Search products..." required />
-                    <button type="submit" onClick={() => handleSearch()} className="text-white absolute border-0 right-2.5 bottom-2.5 bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-4 py-2">Search</button>
+                    <span type="submit" className="text-white absolute border-0 right-2.5 bottom-2.5 bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-4 py-2">auto search</span>
                 </div>
             </form>
         </div>
 
 
          <div className={"grid grid-cols-2 gap-y-10 gap-x-6  xl:gap-x-8" + SwitchGrid(grid)}>
-         {isLoading ? (
+          
+         {isLoading && searchLoading ? (
               <div role="status" className="max-w-sm animate-pulse">
                 <div className="h-2.5 bg-slate-200 rounded-full dark:bg-slate-700 w-48 mb-4"></div>
                 <div className="h-2 bg-slate-200 rounded-full dark:bg-slate-700 max-w-[360px] mb-2.5"></div>
@@ -143,19 +147,34 @@ const Home: NextPage<IProductsinference> = () => {
                 <div className="h-2 bg-slate-200 rounded-full dark:bg-slate-700 max-w-[360px]"></div>
                 <span className="sr-only">Loading...</span>
             </div>
-            ) : isError ? (
+            ) : isError && sError ? (
               <p>{error.message}</p>
-            ) : (
+            ) : searched === "" ? (
               data?.products.map((product: any, index: number) => (
-                <Products product={product} key={index} category={''} description={''} id={0} image={undefined} price={0} title={''} rating={{
+                <Products product={product || {}} key={index} category={''} description={''} id={0} image={undefined} price={0} title={''} rating={{
                   rate: 0,
                   count: 0
                 }}  />
               ))
-        )}
-          
-            
+        ) : 
+        (
+    
+            search?.products.map((product: any, index: number) => (
+              <Products product={product} key={index} category={''} description={''} id={0} image={undefined} price={0} title={''} rating={{
+                rate: 0,
+                count: 0
+              }}  />
+            ))
+ 
+        )
+      }
         </div>
+
+      
+        {search?.products && <div className="p-4 text-sm mx-auto w-full text-gray-700 bg-gray-100 rounded-lg text-center" role="alert">
+          <span className="font-medium">Unable to find your Item!</span> Hi there, We are unable to find (searched) in our inventory.
+        </div>}
+              
 
         <div className='w-full mt-10'>
         <div className="text-center text-md font-medium mb-5">Showing products: <span className="px-2 py-1.5 text-xs font-semibold text-gray-800 bg-gray-100 border border-gray-200 rounded-lg">{page} of {data?.total}</span></div>
@@ -181,7 +200,7 @@ const Home: NextPage<IProductsinference> = () => {
                   Next Page
                 </button>
             </div>
-            {isFetching ? <div className="text-center text-md font-medium mb-5"> Loading...</div> : null}{' '}
+            {isFetching && sFetch ? <div className="text-center text-md font-medium mb-5"> Loading...</div> : null}{' '}
         </div>
 
 
