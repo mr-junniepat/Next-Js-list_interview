@@ -42,11 +42,29 @@ const Home = () => {
   () => SearchProductListFromAPI(searched), { keepPreviousData: true, staleTime: 5000 });
 
 
+  function addProductBanner() {
+    let start = 2;
+    let deleteCount = 0;
+    let element = {
+      brand: "Impression of Acqua Di Gio",
+      category: "fragrances",
+      description: "Mega Discount, Impression of Acqua Di Gio by GiorgioArmani concentrated attar perfume Oil",
+      discountPercentage: 8.4,
+      id: 11,
+      images: ["https://dummyjson.com/image/i/products/11/1.jpg", "https://dummyjson.com/image/i/products/11/2.jpg"],
+      price: 13,
+      rating: 4.26,
+      stock: 65,
+      thumbnail: "https://dummyjson.com/image/i/products/11/thumbnail.jpg",
+      title: "perfume Oil"
+    };
 
+    dataSort?.splice(start, deleteCount, element);
+  }
   
 
     useEffect(() => {
-
+      addProductBanner()
 
       if (sortBy === "ASC") {
           let dataSorted = data?.products?.sort((a: { price: number; }, b: { price: number; }) => a.price - b.price);
@@ -106,7 +124,7 @@ const Home = () => {
         {/* {banner.position === "top" && <>banner</>} */}
 
         <div className="mb-10 mt-5">
-            <div className="flex flex-row justify-between">
+            <div className="md:flex md:flex-row block justify-between">
                 <h2 className="h-10">Products</h2>
             
                 <div className="flex justify-between">
@@ -142,15 +160,39 @@ const Home = () => {
          <div className={"grid grid-cols-2 gap-y-10 gap-x-6  xl:gap-x-8" + SwitchGrid(grid)}>
           
          {isLoading && searchLoading ? (
+             <>
               <div role="status" className="max-w-sm animate-pulse">
-                <div className="h-2.5 bg-slate-200 rounded-full dark:bg-slate-700 w-48 mb-4"></div>
+                <div className="h-[16rem] bg-slate-200 rounded-md dark:bg-slate-700 w-full mb-4"></div>
                 <div className="h-2 bg-slate-200 rounded-full dark:bg-slate-700 max-w-[360px] mb-2.5"></div>
                 <div className="h-2 bg-slate-200 rounded-full dark:bg-slate-700 mb-2.5"></div>
-                <div className="h-2 bg-slate-200 rounded-full dark:bg-slate-700 max-w-[330px] mb-2.5"></div>
-                <div className="h-2 bg-slate-200 rounded-full dark:bg-slate-700 max-w-[300px] mb-2.5"></div>
-                <div className="h-2 bg-slate-200 rounded-full dark:bg-slate-700 max-w-[360px]"></div>
+                <div className="h-4 bg-slate-200 rounded-full dark:bg-slate-700 max-w-[330px] mb-2.5"></div>
                 <span className="sr-only">Loading...</span>
             </div>
+
+            <div role="status" className="max-w-sm animate-pulse">
+                <div className="h-[16rem] bg-slate-200 rounded-md dark:bg-slate-700 w-full mb-4"></div>
+                <div className="h-2 bg-slate-200 rounded-full dark:bg-slate-700 max-w-[360px] mb-2.5"></div>
+                <div className="h-2 bg-slate-200 rounded-full dark:bg-slate-700 mb-2.5"></div>
+                <div className="h-4 bg-slate-200 rounded-full dark:bg-slate-700 max-w-[330px] mb-2.5"></div>
+                <span className="sr-only">Loading...</span>
+            </div>
+
+            <div role="status" className="max-w-sm animate-pulse">
+                <div className="h-[16rem] bg-slate-200 rounded-md dark:bg-slate-700 w-full mb-4"></div>
+                <div className="h-2 bg-slate-200 rounded-full dark:bg-slate-700 max-w-[360px] mb-2.5"></div>
+                <div className="h-2 bg-slate-200 rounded-full dark:bg-slate-700 mb-2.5"></div>
+                <div className="h-4 bg-slate-200 rounded-full dark:bg-slate-700 max-w-[330px] mb-2.5"></div>
+                <span className="sr-only">Loading...</span>
+            </div>
+
+            <div role="status" className="max-w-sm animate-pulse">
+                <div className="h-[16rem] bg-slate-200 rounded-md dark:bg-slate-700 w-full mb-4"></div>
+                <div className="h-2 bg-slate-200 rounded-full dark:bg-slate-700 max-w-[360px] mb-2.5"></div>
+                <div className="h-2 bg-slate-200 rounded-full dark:bg-slate-700 mb-2.5"></div>
+                <div className="h-4 bg-slate-200 rounded-full dark:bg-slate-700 max-w-[330px] mb-2.5"></div>
+                <span className="sr-only">Loading...</span>
+            </div>
+             </>
             ) : isError && sError ? (
               <p>{error?.message}</p>
             ) : searched === "" ? (
