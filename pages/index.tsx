@@ -28,6 +28,7 @@ const Home = () => {
   const [dataSort, setDataSorted]= useState([]);
   const [dataSearchSort, setDataSearchSorted]= useState([]);
 
+
   const queryClient = new QueryClient();
   
   function handleSwitchGrid(value: string) {
@@ -41,9 +42,12 @@ const Home = () => {
   () => SearchProductListFromAPI(searched), { keepPreviousData: true, staleTime: 5000 });
 
 
+
   
 
     useEffect(() => {
+
+
       if (sortBy === "ASC") {
           let dataSorted = data?.products?.sort((a: { price: number; }, b: { price: number; }) => a.price - b.price);
           setDataSorted(dataSorted);
@@ -103,17 +107,17 @@ const Home = () => {
 
         <div className="mb-10 mt-5">
             <div className="flex flex-row justify-between">
-                <h2 className="">Products</h2>
+                <h2 className="h-10">Products</h2>
             
                 <div className="flex justify-between">
-                  <select defaultValue={sortBy} onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setSort(e.target.value)} className="bg-slate-50 border border-slate-300 text-slate-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5">
+                  <select defaultValue={sortBy} onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setSort(e.target.value)} className="bg-slate-50 border border-slate-300 text-slate-900 text-sm rounded-lg h-10 focus:ring-blue-500 focus:border-blue-500 block p-2.5">
                     <option value="ASC">Sort By Highest Price</option>
                     <option value="DESC">Sort By Lowest Price</option>
                   </select>
 
                
                   <select defaultValue={grid} onChange={(e: React.ChangeEvent<HTMLSelectElement>,): void => handleSwitchGrid(e.target.value)} 
-                    className="bg-transparent border-0 ml-5 text-slate-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5">
+                    className="bg-transparent border-0 ml-5 text-slate-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 h-10 block p-2.5">
                     <option value="grid2">2 per row</option>
                     <option value="grid3">3 per row</option>
                     <option value="grid4">4 per row</option>
