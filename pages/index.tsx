@@ -42,29 +42,10 @@ const Home = () => {
   () => SearchProductListFromAPI(searched), { keepPreviousData: true, staleTime: 5000 });
 
 
-  function addProductBanner() {
-    let start = 2;
-    let deleteCount = 0;
-    let element = {
-      brand: "Impression of Acqua Di Gio",
-      category: "fragrances",
-      description: "Mega Discount, Impression of Acqua Di Gio by GiorgioArmani concentrated attar perfume Oil",
-      discountPercentage: 8.4,
-      id: 11,
-      images: ["https://dummyjson.com/image/i/products/11/1.jpg", "https://dummyjson.com/image/i/products/11/2.jpg"],
-      price: 13,
-      rating: 4.26,
-      stock: 65,
-      thumbnail: "https://dummyjson.com/image/i/products/11/thumbnail.jpg",
-      title: "perfume Oil"
-    };
 
-    dataSort?.splice(start, deleteCount, element);
-  }
-  
 
     useEffect(() => {
-      addProductBanner()
+
 
       if (sortBy === "ASC") {
           let dataSorted = data?.products?.sort((a: { price: number; }, b: { price: number; }) => a.price - b.price);
